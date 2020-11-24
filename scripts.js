@@ -12,18 +12,20 @@ let player = null;
 let enemy = null;
 let startBattle = false;
 let win = false;
+let stageName = document.querySelector('.stageName')
+
+function colorfulText(){
+  let text = document.querySelector('.thanks-text')
+  const colors = ['black', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'white']
+  i = 0
+  setInterval(() => {
+    text.style.color = colors[i%8];
+    i++;
+  }, 100);
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function getMargin(character, direction) {
-  switch (direction) {
-    case "Left":
-      return parseInt(character.style.left.slice(0, -1));
-    case "Right":
-      return parseInt(character.style.right.slice(0, -1));
-  }
 }
 
 function update() {
@@ -93,7 +95,7 @@ class Player {
   }
 
   damage(value) {
-    let attack = value * 10 - this.stat.DP * 7 + (Math.random()*10 > 6 ? value*0.5 : 0);
+    let attack = value * 10 - this.stat.DP * 7 + (Math.random()*10 > 9 ? value*0.5 : 0);
     this.stat.HP -= attack > 0 ? attack : 1;
   }
 
@@ -129,7 +131,7 @@ class Enemy {
     let i = 1;
     while (
       this.character.getBoundingClientRect().x -
-        player.character.getBoundingClientRect().right > window.innerWidth * -0.03
+        player.character.getBoundingClientRect().right > window.innerWidth * -0.02
     ) {
       await sleep(30);
       this.character.style.right = `${i}%`;
@@ -174,21 +176,25 @@ async function main() {
   while (stageNum < stages.length + 1) {
     update();
     win = false;
-    document.querySelector(
-      ".stageName"
-    ).innerHTML = `스테이지 ${stageNum}(s를 눌러 시작하세요)`;
+    stageName.innerHTML = `스테이지 ${stageNum}(s를 눌러 시작하세요)`;
     enemy.set(stages[stageNum - 1]);
     await enemy.initialMove();
     while (!startBattle) {
       await sleep(100);
     }
-    document.querySelector(".stageName").innerHTML = `스테이지 ${stageNum}`;
+    stageName.innerHTML = `스테이지 ${stageNum}`;
     canAttack = true;
     await attackProcess();
     if (win) {
       stageNum++;
     }
   }
+  player.character.style.display = 'none'
+  enemy.character.style.display = 'none'
+  document.querySelector('.row').style.display = 'none'
+  stageName.innerHTML = '축하합니다! 모든 스테이지를 통과하셨습니다!'
+  document.querySelector('.end-comment').style.display = 'inline';
+  colorfulText();
 }
 
 async function attackProcess() {
